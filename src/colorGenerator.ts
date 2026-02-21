@@ -11,6 +11,7 @@ import { HexColor, ColorOptions, BranchColor } from './types';
  * HEX カラー文字列を正規化する。
  * - `#rrggbb` はそのまま（小文字化して）返す
  * - `#rgb` は `#rrggbb` 形式に展開する
+ * - `#rrggbbaa` はそのまま返す（アルファ値は輝度計算では無視される）
  * - それ以外はエラーとする
  */
 function normalizeHexColor(hex: string): HexColor {
@@ -46,11 +47,10 @@ function normalizeHexColor(hex: string): HexColor {
 export function djb2Hash(str: string): number {
 	let hash = 5381;
 	for (let i = 0; i < str.length; i++) {
-		// hash * 33 + charCode (djb2)
-		hash = (hash * 33) + str.charCodeAt(i);
+		// hash * 33 + charCode (djb2), 常に 32 ビット範囲に収める
+		hash = ((hash * 33) + str.charCodeAt(i)) >>> 0;
 	}
-	// 符号なし 32 ビット整数に変換
-	return hash >>> 0;
+	return hash;
 }
 
 /**
@@ -61,6 +61,8 @@ export function djb2Hash(str: string): number {
  * @returns HEX カラー文字列 (例: "#ff0000")
  */
 export function hslToHex(h: number, s: number, l: number): HexColor {
+	// h を 0-360 の範囲に正規化
+	h = ((h % 360) + 360) % 360;
 	// s, l を 0-1 の範囲に clamp
 	s = Math.max(0, Math.min(1, s));
 	l = Math.max(0, Math.min(1, l));

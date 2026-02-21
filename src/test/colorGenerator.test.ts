@@ -25,9 +25,9 @@ suite('colorGenerator', () => {
 			assert.notStrictEqual(hash1, hash2);
 		});
 
-		test('空文字列でもエラーにならない', () => {
+		test('空文字列のハッシュ値は初期値 5381 を返す', () => {
 			const hash = djb2Hash('');
-			assert.strictEqual(typeof hash, 'number');
+			assert.strictEqual(hash, 5381);
 		});
 
 		test('特殊文字を含む文字列を処理できる', () => {
@@ -71,23 +71,24 @@ suite('colorGenerator', () => {
 		});
 
 		test('saturation が範囲外の場合 0-1 に clamp される', () => {
-			const clamped = hslToHex(0, 1.5, 0.5);
-			const normal = hslToHex(0, 1.0, 0.5);
-			assert.strictEqual(clamped, normal);
-
-			const clampedNeg = hslToHex(0, -0.5, 0.5);
-			const normalZero = hslToHex(0, 0, 0.5);
-			assert.strictEqual(clampedNeg, normalZero);
+			// > 1.0 は 1.0 に clamp → 純粋な赤
+			assert.strictEqual(hslToHex(0, 1.5, 0.5), '#ff0000');
+			// < 0.0 は 0.0 に clamp → グレー（無彩色）
+			assert.strictEqual(hslToHex(0, -0.5, 0.5), '#808080');
 		});
 
 		test('lightness が範囲外の場合 0-1 に clamp される', () => {
-			const clamped = hslToHex(0, 0.5, 1.5);
-			const normal = hslToHex(0, 0.5, 1.0);
-			assert.strictEqual(clamped, normal);
+			// > 1.0 は 1.0 に clamp → 白
+			assert.strictEqual(hslToHex(0, 0.5, 1.5), '#ffffff');
+			// < 0.0 は 0.0 に clamp → 黒
+			assert.strictEqual(hslToHex(0, 0.5, -0.5), '#000000');
+		});
 
-			const clampedNeg = hslToHex(0, 0.5, -0.5);
-			const normalZero = hslToHex(0, 0.5, 0);
-			assert.strictEqual(clampedNeg, normalZero);
+		test('hue が 360 以上の場合正規化される', () => {
+			// 370 は 10 と同じ
+			assert.strictEqual(hslToHex(370, 1.0, 0.5), hslToHex(10, 1.0, 0.5));
+			// 負の値も正規化される
+			assert.strictEqual(hslToHex(-10, 1.0, 0.5), hslToHex(350, 1.0, 0.5));
 		});
 	});
 
@@ -160,8 +161,34 @@ suite('colorGenerator', () => {
 		});
 
 		test('#rgb 形式を受け付ける', () => {
-			const luminance = getRelativeLuminance('#fff');
-			assert.ok(Math.abs(luminance - 1.0) < 0.001);
+			// 白
+			const whiteShort = getRelativeLuminance('#fff');
+			const whiteLong = getRelativeLuminance('#ffffff');
+			assert.ok(Math.abs(whiteShort - whiteLong) < 0.001);
+
+			// 純色の 3 桁表記が 6 桁表記と同じ相対輝度になる
+			const redShort = getRelativeLuminance('#f00');
+			const redLong = getRelativeLuminance('#ff0000');
+			assert.ok(Math.abs(redShort - redLong) < 0.001);
+
+			const greenShort = getRelativeLuminance('#0f0');
+			const greenLong = getRelativeLuminance('#00ff00');
+			assert.ok(Math.abs(greenShort - greenLong) < 0.001);
+
+			const blueShort = getRelativeLuminance('#00f');
+			const blueLong = getRelativeLuminance('#0000ff');
+			assert.ok(Math.abs(blueShort - blueLong) < 0.001);
+
+			// 中間値 (#888 -> #888888)
+			const grayShort = getRelativeLuminance('#888');
+			const grayLong = getRelativeLuminance('#888888');
+			assert.ok(Math.abs(grayShort - grayLong) < 0.001);
+		});
+
+		test('#rrggbbaa 形式のアルファ値は無視される', () => {
+			const luminanceOpaque = getRelativeLuminance('#3a7ae8');
+			const luminanceWithAlpha = getRelativeLuminance('#3a7ae8cc');
+			assert.ok(Math.abs(luminanceOpaque - luminanceWithAlpha) < 0.001);
 		});
 	});
 
