@@ -1,71 +1,46 @@
-# vscode-branch-painter README
+# Branch Painter
 
-This is the README for your extension "vscode-branch-painter". After writing up a brief description, we recommend including the following sections.
+Git ブランチ名に基づいて VS Code のタイトルバー・ステータスバー・アクティビティバーの色を自動変更し、タイトルにブランチ名を表示する拡張機能です。
 
-## Features
+Automatically changes the color of VS Code's title bar, status bar, and activity bar based on the Git branch name, and displays the branch name in the title.
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+## 機能 / Features
 
-For example if there is an image subfolder under your extension project workspace:
+- ブランチ名のハッシュから色を自動生成 / Auto-generates colors from branch name hashes
+- タイトルバー・ステータスバー・アクティビティバーの色を個別に制御 / Controls colors of title bar, status bar, and activity bar independently
+- タイトルにブランチ名を表示 / Displays branch name in the window title
+- 手動での色変更・リセットコマンド / Manual color change and reset commands
+- ブランチ名と色の手動マッピング / Manual branch-to-color mapping
 
-\!\[feature X\]\(images/feature-x.png\)
+## コマンド / Commands
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+| コマンド / Command | 説明 / Description |
+|---|---|
+| `Branch Painter: Set Color` | 手動で色を選択 / Manually select a color |
+| `Branch Painter: Reset Color` | 色をリセット / Reset colors to default |
+| `Branch Painter: Toggle Auto Color` | 自動色分けの切り替え / Toggle automatic coloring |
 
-## Requirements
+## 設定 / Settings
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+| 設定 / Setting | 型 / Type | デフォルト / Default | 説明 / Description |
+|---|---|---|---|
+| `branchPainter.enabled` | `boolean` | `true` | 拡張機能の有効/無効 / Enable/disable the extension |
+| `branchPainter.affectTitleBar` | `boolean` | `true` | タイトルバーの色変更 / Change title bar color |
+| `branchPainter.affectStatusBar` | `boolean` | `true` | ステータスバーの色変更 / Change status bar color |
+| `branchPainter.affectActivityBar` | `boolean` | `true` | アクティビティバーの色変更 / Change activity bar color |
+| `branchPainter.showBranchInTitle` | `boolean` | `true` | タイトルにブランチ名表示 / Show branch name in title |
+| `branchPainter.branchColorMap` | `object` | `{}` | ブランチ名と色のマッピング / Branch-to-color mapping |
+| `branchPainter.saturation` | `number` | `0.6` | 自動生成色の彩度 / Saturation of auto-generated colors |
+| `branchPainter.lightness` | `number` | `0.3` | 自動生成色の明度 / Lightness of auto-generated colors |
 
-## Extension Settings
+## 開発 / Development
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+```bash
+npm install
+npm run compile
+# F5 で Extension Development Host を起動 / Press F5 to launch Extension Development Host
+```
 
-For example:
+## ライセンス / License
 
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+MIT
