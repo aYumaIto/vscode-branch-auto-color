@@ -9,15 +9,83 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "workspaceContains:**/.git",
+    "onStartupFinished"
+  ],
+  "extensionDependencies": [
+    "vscode.git"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "vscode-branch-painter.helloWorld",
-        "title": "Hello World"
+        "command": "branchPainter.setColor",
+        "title": "Branch Painter: Set Color"
+      },
+      {
+        "command": "branchPainter.resetColor",
+        "title": "Branch Painter: Reset Color"
+      },
+      {
+        "command": "branchPainter.toggleAutoColor",
+        "title": "Branch Painter: Toggle Auto Color"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Branch Painter",
+      "properties": {
+        "branchPainter.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "拡張機能の有効/無効"
+        },
+        "branchPainter.affectTitleBar": {
+          "type": "boolean",
+          "default": true,
+          "description": "タイトルバーの色を変更するか"
+        },
+        "branchPainter.affectStatusBar": {
+          "type": "boolean",
+          "default": true,
+          "description": "ステータスバーの色を変更するか"
+        },
+        "branchPainter.affectActivityBar": {
+          "type": "boolean",
+          "default": true,
+          "description": "アクティビティバーの色を変更するか"
+        },
+        "branchPainter.showBranchInTitle": {
+          "type": "boolean",
+          "default": true,
+          "description": "タイトルバーにブランチ名を表示するか"
+        },
+        "branchPainter.titleFormat": {
+          "type": "string",
+          "default": "[${branch}] ${folderName} ${separator} ${activeEditorShort}${dirty}",
+          "description": "タイトル表示のフォーマット"
+        },
+        "branchPainter.branchColorMap": {
+          "type": "object",
+          "default": {},
+          "description": "ブランチ名と色の手動マッピング（例: { \"main\": \"#1e8a3a\", \"develop\": \"#3a7ae8\" }）"
+        },
+        "branchPainter.saturation": {
+          "type": "number",
+          "default": 0.6,
+          "minimum": 0,
+          "maximum": 1,
+          "description": "自動生成色の彩度 (0-1)"
+        },
+        "branchPainter.lightness": {
+          "type": "number",
+          "default": 0.3,
+          "minimum": 0,
+          "maximum": 1,
+          "description": "自動生成色の明度 (0-1)"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
