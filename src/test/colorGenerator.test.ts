@@ -259,6 +259,14 @@ suite('colorGenerator', () => {
 			assert.strictEqual(result.background, expected);
 		});
 
+		test('branchColorMap の値が不正な場合はエラーになる', () => {
+			assert.throws(() => {
+				getColorForBranch('main', {
+					branchColorMap: { main: '' },
+				});
+			}, /Invalid HEX color/);
+		});
+
 		test('saturation と lightness を指定できる', () => {
 			const result = getColorForBranch('develop', {
 				saturation: 0.8,

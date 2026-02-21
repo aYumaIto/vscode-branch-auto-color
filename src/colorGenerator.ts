@@ -157,9 +157,9 @@ export function getColorForBranch(
 ): BranchColor {
 	const { branchColorMap, saturation = 0.6, lightness = 0.3 } = options;
 
-	// branchColorMap にマッピングがある場合はそちらを優先
+	// branchColorMap にマッピングがある場合はそちらを優先（キーの存在で判定し、値は normalizeHexColor で検証）
 	const background: HexColor =
-		branchColorMap?.[branchName]
+		branchColorMap && branchName in branchColorMap
 			? normalizeHexColor(branchColorMap[branchName])
 			: generateColorFromBranch(branchName, saturation, lightness);
 
