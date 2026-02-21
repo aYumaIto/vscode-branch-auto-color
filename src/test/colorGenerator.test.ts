@@ -69,6 +69,26 @@ suite('colorGenerator', () => {
 		test('グレー (0, 0%, 50%) → #808080', () => {
 			assert.strictEqual(hslToHex(0, 0, 0.5), '#808080');
 		});
+
+		test('saturation が範囲外の場合 0-1 に clamp される', () => {
+			const clamped = hslToHex(0, 1.5, 0.5);
+			const normal = hslToHex(0, 1.0, 0.5);
+			assert.strictEqual(clamped, normal);
+
+			const clampedNeg = hslToHex(0, -0.5, 0.5);
+			const normalZero = hslToHex(0, 0, 0.5);
+			assert.strictEqual(clampedNeg, normalZero);
+		});
+
+		test('lightness が範囲外の場合 0-1 に clamp される', () => {
+			const clamped = hslToHex(0, 0.5, 1.5);
+			const normal = hslToHex(0, 0.5, 1.0);
+			assert.strictEqual(clamped, normal);
+
+			const clampedNeg = hslToHex(0, 0.5, -0.5);
+			const normalZero = hslToHex(0, 0.5, 0);
+			assert.strictEqual(clampedNeg, normalZero);
+		});
 	});
 
 	// =============================================
@@ -81,7 +101,7 @@ suite('colorGenerator', () => {
 			assert.strictEqual(color1, color2);
 		});
 
-		test('異なるブランチ名からは異なる色が生成される', () => {
+		test('main と develop では異なる色が生成される', () => {
 			const color1 = generateColorFromBranch('main');
 			const color2 = generateColorFromBranch('develop');
 			assert.notStrictEqual(color1, color2);
@@ -131,6 +151,17 @@ suite('colorGenerator', () => {
 		test('相対輝度は 0 以上 1 以下の範囲', () => {
 			const luminance = getRelativeLuminance('#3a7ae8');
 			assert.ok(luminance >= 0 && luminance <= 1);
+		});
+
+		test('不正な HEX カラーを渡すとエラーをスローする', () => {
+			assert.throws(() => getRelativeLuminance('invalid'));
+			assert.throws(() => getRelativeLuminance('#xyz'));
+			assert.throws(() => getRelativeLuminance(''));
+		});
+
+		test('#rgb 形式を受け付ける', () => {
+			const luminance = getRelativeLuminance('#fff');
+			assert.ok(Math.abs(luminance - 1.0) < 0.001);
 		});
 	});
 
@@ -193,8 +224,12 @@ suite('colorGenerator', () => {
 			const result = getColorForBranch('feature/test', {
 				branchColorMap: { main: '#1e8a3a' },
 			});
-			// ハッシュベースなので #1e8a3a とは異なるはず
 			assert.match(result.background, /^#[0-9a-f]{6}$/);
+			assert.notStrictEqual(result.background, '#1e8a3a');
+
+			// ハッシュベースの色生成ロジックと一致することを確認
+			const expected = generateColorFromBranch('feature/test');
+			assert.strictEqual(result.background, expected);
 		});
 
 		test('saturation と lightness を指定できる', () => {
