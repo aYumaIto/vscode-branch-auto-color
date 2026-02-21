@@ -1,8 +1,6 @@
 import * as vscode from 'vscode';
 
 export function activate(context: vscode.ExtensionContext) {
-	console.log('Branch Painter is now active!');
-
 	const setColor = vscode.commands.registerCommand('branchPainter.setColor', () => {
 		vscode.window.showInformationMessage('Branch Painter: Set Color (not yet implemented)');
 	});
