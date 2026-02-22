@@ -4,3 +4,12 @@ node_modules
 .vscode-test/
 *.vsix
 personal_workspace/
+
+# Coverage artifacts
+coverage/
+coverage/**
+lcov-report/
+coverage/lcov.info
+.c8/
+.nyc_output/
+.cache/

@@ -90,6 +90,11 @@ suite('colorGenerator', () => {
 			// 負の値も正規化される
 			assert.strictEqual(hslToHex(-10, 1.0, 0.5), hslToHex(350, 1.0, 0.5));
 		});
+
+		test('180-240 範囲の場合', () => {
+			// 200°, s=100%, l=50% -> rgb approx (0,170,255) -> #00aaff
+			assert.strictEqual(hslToHex(200, 1.0, 0.5), '#00aaff');
+		});
 	});
 
 	// =============================================
