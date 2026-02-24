@@ -14,7 +14,7 @@ export async function setColor() {
   if (color) {
     const bg = color.trim() as HexColor;
     const fg = getForegroundColor(bg);
-    applyBranchColors({
+    await applyBranchColors({
       titleBar: bg,
       titleBarForeground: fg,
       statusBar: bg,
@@ -29,8 +29,8 @@ export async function setColor() {
 /**
  * 拡張機能が追加した色設定のみリセット
  */
-export function resetColor() {
-  resetTheme();
+export async function resetColor() {
+  await resetTheme();
   vscode.window.showInformationMessage('Branch Painter: 色設定をリセットしました');
 }
 
@@ -41,5 +41,11 @@ export async function toggleAutoColor() {
   const config = vscode.workspace.getConfiguration('branchPainter');
   const enabled = config.get<boolean>('enabled', true);
   await config.update('enabled', !enabled, vscode.ConfigurationTarget.Workspace);
+
+  // 無効化時はテーマをリセットして元に戻す
+  if (enabled) {
+    await resetTheme();
+  }
+
   vscode.window.showInformationMessage(`Branch Painter: 自動色分けを${!enabled ? '有効' : '無効'}にしました`);
 }

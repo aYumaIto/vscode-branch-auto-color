@@ -1,4 +1,3 @@
-
 import * as vscode from 'vscode';
 import { applyThemeForBranch, resetTheme } from './themeApplier';
 import { setColor, resetColor, toggleAutoColor } from './commands';
@@ -11,9 +10,16 @@ export async function activate(context: vscode.ExtensionContext) {
 		vscode.window.showErrorMessage('Branch Painter: Git拡張が見つかりません');
 		return;
 	}
-	const gitApi: API = gitExt.isActive ? gitExt.exports.getAPI(1) : await gitExt.activate().then(() => gitExt.exports.getAPI(1));
-	if (!gitApi) {
-		vscode.window.showErrorMessage('Branch Painter: Git API取得失敗');
+
+	let gitApi: API;
+	try {
+		if (!gitExt.isActive) {
+			await gitExt.activate();
+		}
+		gitApi = gitExt.exports.getAPI(1);
+	} catch (error) {
+		const message = error instanceof Error ? error.message : String(error);
+		vscode.window.showErrorMessage(`Branch Painter: Git API取得失敗 — ${message}`);
 		return;
 	}
 
@@ -23,19 +29,27 @@ export async function activate(context: vscode.ExtensionContext) {
 		applyThemeForBranch(branch);
 	}
 
+	// リポジトリにリスナーを登録し Disposable を返す
+	function registerRepoListeners(repo: Repository): vscode.Disposable[] {
+		return [
+			repo.state.onDidChange(() => updateBranchColor(repo)),
+			repo.onDidCheckout(() => updateBranchColor(repo)),
+		];
+	}
+
 	// 既存リポジトリにリスナー登録
-	gitApi.repositories.forEach((repo: Repository) => {
+	for (const repo of gitApi.repositories) {
 		updateBranchColor(repo);
-		repo.state.onDidChange(() => updateBranchColor(repo));
-		repo.onDidCheckout(() => updateBranchColor(repo));
-	});
+		context.subscriptions.push(...registerRepoListeners(repo));
+	}
 
 	// 新規リポジトリにもリスナー登録
-	gitApi.onDidOpenRepository((repo: Repository) => {
-		updateBranchColor(repo);
-		repo.state.onDidChange(() => updateBranchColor(repo));
-		repo.onDidCheckout(() => updateBranchColor(repo));
-	});
+	context.subscriptions.push(
+		gitApi.onDidOpenRepository((repo: Repository) => {
+			updateBranchColor(repo);
+			context.subscriptions.push(...registerRepoListeners(repo));
+		}),
+	);
 
 	// コマンド登録
 	context.subscriptions.push(
@@ -45,6 +59,6 @@ export async function activate(context: vscode.ExtensionContext) {
 	);
 }
 
-export function deactivate() {
-	resetTheme();
+export async function deactivate(): Promise<void> {
+	await resetTheme();
 }
