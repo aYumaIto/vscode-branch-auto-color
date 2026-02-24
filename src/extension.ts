@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { applyThemeForBranch, resetTheme } from './themeApplier';
 import { setColor, resetColor, toggleAutoColor } from './commands';
-import type { API, Repository } from './git';
+import type { API, APIState, Repository } from './git';
 
 export async function activate(context: vscode.ExtensionContext) {
   // Git拡張API取得
@@ -21,6 +21,36 @@ export async function activate(context: vscode.ExtensionContext) {
     const message = error instanceof Error ? error.message : String(error);
     vscode.window.showErrorMessage(`Branch Painter: Git API取得失敗 — ${message}`);
     return;
+  }
+
+  // APIが初期化済みでなければ初期化を待機（タイムアウト付き）
+  if (gitApi.state !== 'initialized') {
+    const TIMEOUT_MS = 10_000;
+    await new Promise<void>((resolve, reject) => {
+      const timer = globalThis.setTimeout(() => {
+        disposable.dispose();
+        reject(new Error('Git API initialization timed out'));
+      }, TIMEOUT_MS);
+      const disposable = gitApi.onDidChangeState((state: APIState) => {
+        if (state === 'initialized') {
+          globalThis.clearTimeout(timer);
+          disposable.dispose();
+          resolve();
+        }
+      });
+      // リスナー登録前に initialized に遷移した場合に備え、登録後に再チェック
+      if (gitApi.state === 'initialized') {
+        globalThis.clearTimeout(timer);
+        disposable.dispose();
+        resolve();
+      } else {
+        context.subscriptions.push(disposable);
+      }
+    }).catch((error) => {
+      const message = error instanceof Error ? error.message : String(error);
+      vscode.window.showErrorMessage(`Branch Painter: ${message}`);
+      return;
+    });
   }
 
   // テーマ適用処理を直列化するための Promise チェーン
