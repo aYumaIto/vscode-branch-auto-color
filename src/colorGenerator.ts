@@ -15,29 +15,29 @@ import { HexColor, ColorOptions, BranchColor } from './types';
  * - それ以外はエラーとする
  */
 function normalizeHexColor(hex: string): HexColor {
-	const trimmed = hex.trim();
+  const trimmed = hex.trim();
 
-	// `#rrggbb` 形式
-	if (/^#[0-9a-fA-F]{6}$/.test(trimmed)) {
-		return trimmed.toLowerCase() as HexColor;
-	}
+  // `#rrggbb` 形式
+  if (/^#[0-9a-fA-F]{6}$/.test(trimmed)) {
+    return trimmed.toLowerCase() as HexColor;
+  }
 
-	// `#rgb` 形式を `#rrggbb` に展開
-	if (/^#[0-9a-fA-F]{3}$/.test(trimmed)) {
-		const r = trimmed.charAt(1);
-		const g = trimmed.charAt(2);
-		const b = trimmed.charAt(3);
-		return `#${r}${r}${g}${g}${b}${b}`.toLowerCase() as HexColor;
-	}
+  // `#rgb` 形式を `#rrggbb` に展開
+  if (/^#[0-9a-fA-F]{3}$/.test(trimmed)) {
+    const r = trimmed.charAt(1);
+    const g = trimmed.charAt(2);
+    const b = trimmed.charAt(3);
+    return `#${r}${r}${g}${g}${b}${b}`.toLowerCase() as HexColor;
+  }
 
-	// `#rrggbbaa` 形式
-	if (/^#[0-9a-fA-F]{8}$/.test(trimmed)) {
-		return trimmed.toLowerCase() as HexColor;
-	}
+  // `#rrggbbaa` 形式
+  if (/^#[0-9a-fA-F]{8}$/.test(trimmed)) {
+    return trimmed.toLowerCase() as HexColor;
+  }
 
-	throw new Error(
-		`Invalid HEX color: "${hex}". Expected formats are "#rrggbb", "#rgb", or "#rrggbbaa".`,
-	);
+  throw new Error(
+    `Invalid HEX color: "${hex}". Expected formats are "#rrggbb", "#rgb", or "#rrggbbaa".`,
+  );
 }
 
 /**
@@ -45,12 +45,12 @@ function normalizeHexColor(hex: string): HexColor {
  * 同一入力に対して常に同一の数値を返す（決定的）。
  */
 export function djb2Hash(str: string): number {
-	let hash = 5381;
-	for (let i = 0; i < str.length; i++) {
-		// hash * 33 + charCode (djb2), 常に 32 ビット範囲に収める
-		hash = ((hash * 33) + str.charCodeAt(i)) >>> 0;
-	}
-	return hash;
+  let hash = 5381;
+  for (let i = 0; i < str.length; i++) {
+    // hash * 33 + charCode (djb2), 常に 32 ビット範囲に収める
+    hash = (hash * 33 + str.charCodeAt(i)) >>> 0;
+  }
+  return hash;
 }
 
 /**
@@ -61,38 +61,38 @@ export function djb2Hash(str: string): number {
  * @returns HEX カラー文字列 (例: "#ff0000")
  */
 export function hslToHex(h: number, s: number, l: number): HexColor {
-	// h を 0-360 の範囲に正規化
-	h = ((h % 360) + 360) % 360;
-	// s, l を 0-1 の範囲に clamp
-	s = Math.max(0, Math.min(1, s));
-	l = Math.max(0, Math.min(1, l));
+  // h を 0-360 の範囲に正規化
+  h = ((h % 360) + 360) % 360;
+  // s, l を 0-1 の範囲に clamp
+  s = Math.max(0, Math.min(1, s));
+  l = Math.max(0, Math.min(1, l));
 
-	const c = (1 - Math.abs(2 * l - 1)) * s;
-	const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
-	const m = l - c / 2;
+  const c = (1 - Math.abs(2 * l - 1)) * s;
+  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+  const m = l - c / 2;
 
-	let r: number, g: number, b: number;
+  let r: number, g: number, b: number;
 
-	if (h < 60) {
-		[r, g, b] = [c, x, 0];
-	} else if (h < 120) {
-		[r, g, b] = [x, c, 0];
-	} else if (h < 180) {
-		[r, g, b] = [0, c, x];
-	} else if (h < 240) {
-		[r, g, b] = [0, x, c];
-	} else if (h < 300) {
-		[r, g, b] = [x, 0, c];
-	} else {
-		[r, g, b] = [c, 0, x];
-	}
+  if (h < 60) {
+    [r, g, b] = [c, x, 0];
+  } else if (h < 120) {
+    [r, g, b] = [x, c, 0];
+  } else if (h < 180) {
+    [r, g, b] = [0, c, x];
+  } else if (h < 240) {
+    [r, g, b] = [0, x, c];
+  } else if (h < 300) {
+    [r, g, b] = [x, 0, c];
+  } else {
+    [r, g, b] = [c, 0, x];
+  }
 
-	const toHex = (value: number): string => {
-		const hex = Math.round((value + m) * 255).toString(16);
-		return hex.padStart(2, '0');
-	};
+  const toHex = (value: number): string => {
+    const hex = Math.round((value + m) * 255).toString(16);
+    return hex.padStart(2, '0');
+  };
 
-	return `#${toHex(r)}${toHex(g)}${toHex(b)}` as HexColor;
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}` as HexColor;
 }
 
 /**
@@ -103,13 +103,13 @@ export function hslToHex(h: number, s: number, l: number): HexColor {
  * @returns HEX カラー文字列
  */
 export function generateColorFromBranch(
-	branchName: string,
-	saturation: number = 0.6,
-	lightness: number = 0.3,
+  branchName: string,
+  saturation: number = 0.6,
+  lightness: number = 0.3,
 ): HexColor {
-	const hash = djb2Hash(branchName);
-	const hue = hash % 360;
-	return hslToHex(hue, saturation, lightness);
+  const hash = djb2Hash(branchName);
+  const hue = hash % 360;
+  return hslToHex(hue, saturation, lightness);
 }
 
 /**
@@ -119,17 +119,15 @@ export function generateColorFromBranch(
  * @see https://www.w3.org/TR/WCAG20/#relativeluminancedef
  */
 export function getRelativeLuminance(hex: string): number {
-	const normalized = normalizeHexColor(hex);
-	const r = parseInt(normalized.slice(1, 3), 16) / 255;
-	const g = parseInt(normalized.slice(3, 5), 16) / 255;
-	const b = parseInt(normalized.slice(5, 7), 16) / 255;
+  const normalized = normalizeHexColor(hex);
+  const r = parseInt(normalized.slice(1, 3), 16) / 255;
+  const g = parseInt(normalized.slice(3, 5), 16) / 255;
+  const b = parseInt(normalized.slice(5, 7), 16) / 255;
 
-	const linearize = (channel: number): number =>
-		channel <= 0.03928
-			? channel / 12.92
-			: Math.pow((channel + 0.055) / 1.055, 2.4);
+  const linearize = (channel: number): number =>
+    channel <= 0.03928 ? channel / 12.92 : Math.pow((channel + 0.055) / 1.055, 2.4);
 
-	return 0.2126 * linearize(r) + 0.7152 * linearize(g) + 0.0722 * linearize(b);
+  return 0.2126 * linearize(r) + 0.7152 * linearize(g) + 0.0722 * linearize(b);
 }
 
 /**
@@ -139,31 +137,28 @@ export function getRelativeLuminance(hex: string): number {
  * コントラスト比がより高い方（白または黒）を選択する。
  */
 export function getForegroundColor(backgroundHex: string): HexColor {
-	const luminance = getRelativeLuminance(backgroundHex);
-	// 白と黒それぞれとのコントラスト比を比較
-	const contrastWithWhite = (1.0 + 0.05) / (luminance + 0.05);
-	const contrastWithBlack = (luminance + 0.05) / (0.0 + 0.05);
+  const luminance = getRelativeLuminance(backgroundHex);
+  // 白と黒それぞれとのコントラスト比を比較
+  const contrastWithWhite = (1.0 + 0.05) / (luminance + 0.05);
+  const contrastWithBlack = (luminance + 0.05) / (0.0 + 0.05);
 
-	return (contrastWithWhite >= contrastWithBlack ? '#ffffff' : '#000000') as HexColor;
+  return (contrastWithWhite >= contrastWithBlack ? '#ffffff' : '#000000') as HexColor;
 }
 
 /**
  * ブランチ名から背景色と前景色のペアを返す。
  * branchColorMap にマッピングがあればそちらを優先する。
  */
-export function getColorForBranch(
-	branchName: string,
-	options: ColorOptions = {},
-): BranchColor {
-	const { branchColorMap, saturation = 0.6, lightness = 0.3 } = options;
+export function getColorForBranch(branchName: string, options: ColorOptions = {}): BranchColor {
+  const { branchColorMap, saturation = 0.6, lightness = 0.3 } = options;
 
-	// branchColorMap にマッピングがある場合はそちらを優先（キーの存在で判定し、値は normalizeHexColor で検証）
-	const background: HexColor =
-		branchColorMap && branchName in branchColorMap
-			? normalizeHexColor(branchColorMap[branchName])
-			: generateColorFromBranch(branchName, saturation, lightness);
+  // branchColorMap にマッピングがある場合はそちらを優先（キーの存在で判定し、値は normalizeHexColor で検証）
+  const background: HexColor =
+    branchColorMap && branchName in branchColorMap
+      ? normalizeHexColor(branchColorMap[branchName])
+      : generateColorFromBranch(branchName, saturation, lightness);
 
-	const foreground = getForegroundColor(background);
+  const foreground = getForegroundColor(background);
 
-	return { background, foreground };
+  return { background, foreground };
 }

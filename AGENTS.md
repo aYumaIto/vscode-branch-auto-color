@@ -74,4 +74,5 @@ npm test          # テスト実行（要: npm run compile 事前実行）
 - `package.json` の `contributes` セクションが拡張機能の宣言的定義。コマンド ID は `branchPainter.*` を使用
 
 ## 指摘事項（追記していく）
+
 - `interface` ではなく `type` を使用すること
