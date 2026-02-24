@@ -23,10 +23,18 @@ export async function activate(context: vscode.ExtensionContext) {
 		return;
 	}
 
-	// ブランチ名取得・テーマ適用
+	// テーマ適用処理を直列化するための Promise チェーン
+	let lastApplyPromise: Promise<void> = Promise.resolve();
+
+	// ブランチ名取得・テーマ適用（直列化して競合を防止）
 	function updateBranchColor(repo: Repository) {
 		const branch = repo.state.HEAD?.name || 'unknown';
-		applyThemeForBranch(branch);
+		lastApplyPromise = lastApplyPromise
+			.then(() => applyThemeForBranch(branch))
+			.catch((error) => {
+				const message = error instanceof Error ? error.message : String(error);
+				vscode.window.showErrorMessage(`Branch Painter: テーマ適用失敗 — ${message}`);
+			});
 	}
 
 	// リポジトリにリスナーを登録し Disposable を返す

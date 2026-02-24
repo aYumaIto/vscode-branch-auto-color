@@ -7,6 +7,7 @@ import {
 	formatBranchTitle,
 } from './themeApplierCore';
 import type { BranchColorOptions } from './themeApplierCore';
+import type { HexColor } from './types';
 
 // 純粋関数・型を re-export（既存の利用箇所との互換性のため）
 export {
@@ -66,7 +67,8 @@ export async function applyThemeForBranch(branchName: string): Promise<void> {
 		'[${branch}] ${folderName} ${separator} ${activeEditorShort}${dirty}',
 	);
 
-	let background, foreground;
+	let background: HexColor;
+	let foreground: HexColor;
 	try {
 		({ background, foreground } = getColorForBranch(branchName, {
 			branchColorMap,
