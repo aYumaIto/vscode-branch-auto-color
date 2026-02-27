@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { applyBranchColors, applyThemeForBranch, resetTheme } from './themeApplier';
 import type { HexColor } from './types';
+import { isHexColor } from './types';
 import { getForegroundColor } from './colorGenerator';
 import type { API } from './git';
 
@@ -47,18 +48,21 @@ export async function setColor(gitApi: API): Promise<void> {
     return;
   }
 
-  let hexColor: string;
+  let hexColor: HexColor;
 
   if (selected.label === CUSTOM_HEX_LABEL) {
+    // #rrggbb, #rgb, #rrggbbaa 形式を受け付ける
     const input = await vscode.window.showInputBox({
-      prompt: 'HEXカラーコードを入力 (#rrggbb)',
+      prompt: 'HEXカラーコードを入力 (#rgb, #rrggbb, #rrggbbaa)',
       validateInput: (value) =>
-        /^#[0-9a-fA-F]{6}$/.test(value.trim()) ? undefined : '形式: #rrggbb',
+        isHexColor(value.trim()) || /^#[0-9a-fA-F]{3}$/.test(value.trim())
+          ? undefined
+          : '形式: #rgb, #rrggbb, #rrggbbaa',
     });
     if (!input) {
       return;
     }
-    hexColor = input.trim();
+    hexColor = input.trim() as HexColor;
   } else {
     const preset = PRESET_COLORS.find((p) => p.label === selected.label);
     if (!preset) {
@@ -67,26 +71,32 @@ export async function setColor(gitApi: API): Promise<void> {
     hexColor = preset.color;
   }
 
-  const bg = hexColor as HexColor;
+  const bg = hexColor;
   const fg = getForegroundColor(bg);
 
-  // branchColorMap に保存
+  // branchColorMap に保存する対象ブランチを取得
   const branchName = getCurrentBranchName(gitApi);
-  if (branchName) {
-    const config = vscode.workspace.getConfiguration('branchPainter');
-    const colorMap = { ...config.get<Record<string, string>>('branchColorMap', {}) };
-    colorMap[branchName] = bg;
-    await config.update('branchColorMap', colorMap, vscode.ConfigurationTarget.Workspace);
+  if (!branchName) {
+    vscode.window.showErrorMessage(
+      'Branch Painter: Gitリポジトリが開かれていないか、現在のブランチを特定できないため色を適用できません。',
+    );
+    return;
   }
 
-  // テーマを即時適用
+  const bpConfig = vscode.workspace.getConfiguration('branchPainter');
+  const colorMap = { ...bpConfig.get<Record<string, string>>('branchColorMap', {}) };
+  colorMap[branchName] = bg;
+  await bpConfig.update('branchColorMap', colorMap, vscode.ConfigurationTarget.Workspace);
+
+  // テーマを即時適用（ユーザー設定に応じて対象 UI を制御）
+  const affectTitleBar = bpConfig.get<boolean>('affectTitleBar', true);
+  const affectStatusBar = bpConfig.get<boolean>('affectStatusBar', true);
+  const affectActivityBar = bpConfig.get<boolean>('affectActivityBar', true);
+
   await applyBranchColors({
-    titleBar: bg,
-    titleBarForeground: fg,
-    statusBar: bg,
-    statusBarForeground: fg,
-    activityBar: bg,
-    activityBarForeground: fg,
+    ...(affectTitleBar && { titleBar: bg, titleBarForeground: fg }),
+    ...(affectStatusBar && { statusBar: bg, statusBarForeground: fg }),
+    ...(affectActivityBar && { activityBar: bg, activityBarForeground: fg }),
   });
 
   vscode.window.showInformationMessage(`Branch Painter: 色を適用しました (${hexColor})`);
@@ -115,9 +125,13 @@ export async function toggleAutoColor(gitApi: API): Promise<void> {
   } else {
     // 有効化時は即座に色を適用
     const branchName = getCurrentBranchName(gitApi);
-    if (branchName) {
-      await applyThemeForBranch(branchName);
+    if (!branchName) {
+      vscode.window.showErrorMessage(
+        'Branch Painter: Gitリポジトリが開かれていないか、現在のHEADがブランチに紐付いていません。自動色分けを適用できませんでした。',
+      );
+      return;
     }
+    await applyThemeForBranch(branchName);
   }
 
   vscode.window.showInformationMessage(

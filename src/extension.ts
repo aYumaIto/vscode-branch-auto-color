@@ -5,9 +5,12 @@ import { BranchPainterStatusBar } from './statusBarItem';
 import type { API, APIState, Repository } from './git';
 
 export async function activate(context: vscode.ExtensionContext) {
+  console.log('[BranchPainter] activate() called');
+
   // Git拡張API取得
   const gitExt = vscode.extensions.getExtension('vscode.git');
   if (!gitExt) {
+    console.log('[BranchPainter] Git extension not found');
     vscode.window.showErrorMessage('Branch Painter: Git拡張が見つかりません');
     return;
   }
@@ -24,35 +27,7 @@ export async function activate(context: vscode.ExtensionContext) {
     return;
   }
 
-  // APIが初期化済みでなければ初期化を待機（タイムアウト付き）
-  if (gitApi.state !== 'initialized') {
-    const TIMEOUT_MS = 10_000;
-    await new Promise<void>((resolve, reject) => {
-      const timer = globalThis.setTimeout(() => {
-        disposable.dispose();
-        reject(new Error('Git API initialization timed out'));
-      }, TIMEOUT_MS);
-      const disposable = gitApi.onDidChangeState((state: APIState) => {
-        if (state === 'initialized') {
-          globalThis.clearTimeout(timer);
-          disposable.dispose();
-          resolve();
-        }
-      });
-      // リスナー登録前に initialized に遷移した場合に備え、登録後に再チェック
-      if (gitApi.state === 'initialized') {
-        globalThis.clearTimeout(timer);
-        disposable.dispose();
-        resolve();
-      } else {
-        context.subscriptions.push(disposable);
-      }
-    }).catch((error) => {
-      const message = error instanceof Error ? error.message : String(error);
-      vscode.window.showErrorMessage(`Branch Painter: ${message}`);
-      return;
-    });
-  }
+  console.log(`[BranchPainter] Git API state: ${gitApi.state}, repositories: ${gitApi.repositories.length}`);
 
   // ステータスバーアイテム
   const statusBar = new BranchPainterStatusBar();
@@ -64,11 +39,13 @@ export async function activate(context: vscode.ExtensionContext) {
   // ブランチ名取得・テーマ適用（直列化して競合を防止）
   function updateBranchColor(repo: Repository) {
     const branch = repo.state.HEAD?.name || 'unknown';
+    console.log(`[BranchPainter] updateBranchColor: branch="${branch}", rootUri="${repo.rootUri.toString()}"`);
     statusBar.update(repo);
     lastApplyPromise = lastApplyPromise
       .then(() => applyThemeForBranch(branch))
       .catch((error) => {
         const message = error instanceof Error ? error.message : String(error);
+        console.error(`[BranchPainter] テーマ適用失敗: ${message}`);
         vscode.window.showErrorMessage(`Branch Painter: テーマ適用失敗 — ${message}`);
       });
   }
@@ -81,19 +58,70 @@ export async function activate(context: vscode.ExtensionContext) {
     ];
   }
 
-  // 既存リポジトリにリスナー登録
-  for (const repo of gitApi.repositories) {
+  // レースコンディション防止: 初期化待機の前にリスナーを登録し、
+  // 待機中に検出されたリポジトリも確実に処理する
+  const processedRepos = new Set<string>();
+
+  function processRepo(repo: Repository) {
+    const key = repo.rootUri.toString();
+    if (processedRepos.has(key)) {
+      console.log(`[BranchPainter] processRepo: skip (already processed) ${key}`);
+      return;
+    }
+    processedRepos.add(key);
+    console.log(`[BranchPainter] processRepo: new repo ${key}, kind=${repo.kind}`);
     updateBranchColor(repo);
     context.subscriptions.push(...registerRepoListeners(repo));
   }
 
-  // 新規リポジトリにもリスナー登録
+  // 新規リポジトリのリスナーを初期化待機前に登録
   context.subscriptions.push(
     gitApi.onDidOpenRepository((repo: Repository) => {
-      updateBranchColor(repo);
-      context.subscriptions.push(...registerRepoListeners(repo));
+      console.log(`[BranchPainter] onDidOpenRepository fired: ${repo.rootUri.toString()}`);
+      processRepo(repo);
     }),
   );
+
+  // APIが初期化済みでなければ初期化を待機（タイムアウト付き）
+  if (gitApi.state !== 'initialized') {
+    console.log('[BranchPainter] Waiting for Git API initialization...');
+    const TIMEOUT_MS = 10_000;
+    await new Promise<void>((resolve, reject) => {
+      const timer = globalThis.setTimeout(() => {
+        disposable.dispose();
+        reject(new Error('Git API initialization timed out'));
+      }, TIMEOUT_MS);
+      const disposable = gitApi.onDidChangeState((state: APIState) => {
+        if (state === 'initialized') {
+          console.log('[BranchPainter] Git API initialized via event');
+          globalThis.clearTimeout(timer);
+          disposable.dispose();
+          resolve();
+        }
+      });
+      // リスナー登録前に initialized に遷移した場合に備え、登録後に再チェック
+      if (gitApi.state === 'initialized') {
+        console.log('[BranchPainter] Git API already initialized (race check)');
+        globalThis.clearTimeout(timer);
+        disposable.dispose();
+        resolve();
+      } else {
+        context.subscriptions.push(disposable);
+      }
+    }).catch((error) => {
+      const message = error instanceof Error ? error.message : String(error);
+      vscode.window.showErrorMessage(`Branch Painter: ${message}`);
+      return;
+    });
+  } else {
+    console.log('[BranchPainter] Git API already initialized');
+  }
+
+  // 初期化完了後、既存リポジトリを処理（待機中に検出済みのものは重複スキップ）
+  console.log(`[BranchPainter] Post-init repositories: ${gitApi.repositories.length}`);
+  for (const repo of gitApi.repositories) {
+    processRepo(repo);
+  }
 
   // 設定変更時にステータスバーを更新
   context.subscriptions.push(
@@ -102,6 +130,8 @@ export async function activate(context: vscode.ExtensionContext) {
         const repo = gitApi.repositories[0];
         if (repo) {
           statusBar.update(repo);
+        } else {
+          statusBar.hide();
         }
       }
     }),
