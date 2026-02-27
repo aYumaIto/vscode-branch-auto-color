@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { applyThemeForBranch, resetTheme } from './themeApplier';
 import { setColor, resetColor, toggleAutoColor } from './commands';
+import { BranchPainterStatusBar } from './statusBarItem';
 import type { API, APIState, Repository } from './git';
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -53,12 +54,17 @@ export async function activate(context: vscode.ExtensionContext) {
     });
   }
 
+  // ステータスバーアイテム
+  const statusBar = new BranchPainterStatusBar();
+  context.subscriptions.push(statusBar);
+
   // テーマ適用処理を直列化するための Promise チェーン
   let lastApplyPromise: Promise<void> = Promise.resolve();
 
   // ブランチ名取得・テーマ適用（直列化して競合を防止）
   function updateBranchColor(repo: Repository) {
     const branch = repo.state.HEAD?.name || 'unknown';
+    statusBar.update(repo);
     lastApplyPromise = lastApplyPromise
       .then(() => applyThemeForBranch(branch))
       .catch((error) => {
@@ -86,6 +92,18 @@ export async function activate(context: vscode.ExtensionContext) {
     gitApi.onDidOpenRepository((repo: Repository) => {
       updateBranchColor(repo);
       context.subscriptions.push(...registerRepoListeners(repo));
+    }),
+  );
+
+  // 設定変更時にステータスバーを更新
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeConfiguration((e) => {
+      if (e.affectsConfiguration('branchPainter.enabled')) {
+        const repo = gitApi.repositories[0];
+        if (repo) {
+          statusBar.update(repo);
+        }
+      }
     }),
   );
 
