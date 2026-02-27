@@ -4,8 +4,6 @@ import eslintConfigPrettier from 'eslint-config-prettier';
 export default [
   {
     files: ['**/*.ts'],
-  },
-  {
     plugins: {
       '@typescript-eslint': typescriptEslint.plugin,
     },
