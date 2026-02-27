@@ -91,9 +91,11 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // コマンド登録
   context.subscriptions.push(
-    vscode.commands.registerCommand('branchPainter.setColor', setColor),
+    vscode.commands.registerCommand('branchPainter.setColor', () => setColor(gitApi)),
     vscode.commands.registerCommand('branchPainter.resetColor', resetColor),
-    vscode.commands.registerCommand('branchPainter.toggleAutoColor', toggleAutoColor),
+    vscode.commands.registerCommand('branchPainter.toggleAutoColor', () =>
+      toggleAutoColor(gitApi),
+    ),
   );
 }
 
