@@ -9,7 +9,8 @@ import { getForegroundColor } from './colorGenerator';
 export async function setColor() {
   const color = await vscode.window.showInputBox({
     prompt: 'HEXカラーコードを入力 (#rrggbb)',
-    validateInput: (value) => /^#[0-9a-fA-F]{6}$/.test(value.trim()) ? undefined : '形式: #rrggbb',
+    validateInput: (value) =>
+      /^#[0-9a-fA-F]{6}$/.test(value.trim()) ? undefined : '形式: #rrggbb',
   });
   if (color) {
     const bg = color.trim() as HexColor;
@@ -47,5 +48,7 @@ export async function toggleAutoColor() {
     await resetTheme();
   }
 
-  vscode.window.showInformationMessage(`Branch Painter: 自動色分けを${!enabled ? '有効' : '無効'}にしました`);
+  vscode.window.showInformationMessage(
+    `Branch Painter: 自動色分けを${!enabled ? '有効' : '無効'}にしました`,
+  );
 }
