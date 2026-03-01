@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import { getColorForBranch } from './colorGenerator';
 import {
-  MANAGED_COLOR_KEYS,
   buildColorCustomizations,
   removeManagedKeys,
   formatBranchTitle,
