@@ -10,7 +10,8 @@
     "Other"
   ],
   "activationEvents": [
-    "workspaceContains:**/.git"
+    "workspaceContains:**/.git",
+    "onStartupFinished"
   ],
   "extensionDependencies": [
     "vscode.git"
