@@ -25,7 +25,6 @@ async function getGitApi(): Promise<API> {
   const gitApi: API = gitExt.exports.getAPI(1);
 
   if (gitApi.state !== 'initialized') {
-    console.log('[BranchPainter] Waiting for Git API initialization...');
     const TIMEOUT_MS = 10_000;
     await new Promise<void>((resolve, reject) => {
       let settled = false;
@@ -46,7 +45,6 @@ async function getGitApi(): Promise<API> {
 
       const disposable = gitApi.onDidChangeState((state: APIState) => {
         if (state === 'initialized') {
-          console.log('[BranchPainter] Git API initialized via event');
           cleanup();
           resolve();
         }
@@ -54,13 +52,10 @@ async function getGitApi(): Promise<API> {
 
       // リスナー登録前に initialized に遷移した場合に備え、登録後に再チェック
       if (gitApi.state === 'initialized') {
-        console.log('[BranchPainter] Git API already initialized (race check)');
         cleanup();
         resolve();
       }
     });
-  } else {
-    console.log('[BranchPainter] Git API already initialized');
   }
 
   return gitApi;
@@ -92,7 +87,6 @@ function registerRepoListeners(
   /** リポジトリの現在ブランチに基づいてステータスバーとテーマ色を更新する */
   function updateBranchColor(repo: Repository) {
     const branch = repo.state.HEAD?.name || UNKNOWN_BRANCH;
-    console.log(`[BranchPainter] updateBranchColor: branch="${branch}", rootUri="${repo.rootUri.toString()}"`);
     statusBar.update(repo);
 
     const options = readThemeApplyOptions();
@@ -104,14 +98,12 @@ function registerRepoListeners(
       .then(() => applyThemeForBranch(branch, options))
       .catch((error) => {
         const message = error instanceof Error ? error.message : String(error);
-        console.error(`[BranchPainter] テーマ適用失敗: ${message}`);
         vscode.window.showErrorMessage(`Branch Painter: テーマ適用失敗 — ${message}`);
       });
   }
 
   /** リポジトリの初回テーマ適用とイベントリスナー登録を行う */
   function setupRepo(repo: Repository) {
-    console.log(`[BranchPainter] setupRepo: ${repo.rootUri.toString()}, kind=${repo.kind}`);
     updateBranchColor(repo);
     context.subscriptions.push(
       repo.state.onDidChange(() => updateBranchColor(repo)),
@@ -125,7 +117,6 @@ function registerRepoListeners(
     setupRepo(repo);
   } else {
     const disposable = gitApi.onDidOpenRepository((newRepo: Repository) => {
-      console.log(`[BranchPainter] onDidOpenRepository: ${newRepo.rootUri.toString()}`);
       disposable.dispose();
       setupRepo(newRepo);
     });
@@ -161,20 +152,11 @@ function createStatusBar(context: vscode.ExtensionContext): BranchPainterStatusB
 }
 
 export async function activate(context: vscode.ExtensionContext) {
-  console.log('[BranchPainter] activate() called');
-
   const gitApi = await getGitApi().catch((error: unknown) => {
-    const message = error instanceof Error ? error.message : String(error);
-    console.warn(`[BranchPainter] ${message}`);
     return undefined;
   });
   if (!gitApi) {
     return;
-  }
-
-  console.log(`[BranchPainter] Git API ready, repositories: ${gitApi.repositories.length}`);
-  if (gitApi.repositories.length === 0) {
-    console.log('[BranchPainter] Workspace folder:', vscode.workspace.workspaceFolders?.map(f => f.uri.toString()).join(', ') ?? 'none');
   }
 
   const statusBar = createStatusBar(context);
