@@ -6,7 +6,8 @@
  */
 
 import * as vscode from 'vscode';
-import type { HexColor, ThemeApplyOptions } from './types';
+import type { HexColor, ThemeApplyOptions } from '../types';
+import { DEFAULT_SATURATION, DEFAULT_LIGHTNESS } from '../constants';
 
 const DEFAULT_TITLE_FORMAT =
   '[${branch}] ${folderName} ${separator} ${activeEditorShort}${dirty}';
@@ -69,8 +70,8 @@ export function readThemeApplyOptions(): ThemeApplyOptions | null {
 
   return {
     branchColorMap: config.get<Record<string, string>>('branchColorMap', {}),
-    saturation: config.get<number>('saturation', 0.6),
-    lightness: config.get<number>('lightness', 0.3),
+    saturation: config.get<number>('saturation', DEFAULT_SATURATION),
+    lightness: config.get<number>('lightness', DEFAULT_LIGHTNESS),
     showBranchInTitle: config.get<boolean>('showBranchInTitle', true),
     titleFormat: config.get<string>('titleFormat', DEFAULT_TITLE_FORMAT),
     ...affect,

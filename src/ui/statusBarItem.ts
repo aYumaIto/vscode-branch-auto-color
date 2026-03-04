@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
-import type { Repository } from './git';
-import { isEnabled } from './config';
+import type { Repository } from '../git';
+import { isEnabled } from '../core/config';
+import { COMMAND_SET_COLOR, UNKNOWN_BRANCH } from '../constants';
 
 /**
  * ステータスバーにブランチ名・適用色・worktree バッジを表示する。
@@ -14,7 +15,7 @@ export class BranchPainterStatusBar implements vscode.Disposable {
       vscode.StatusBarAlignment.Left,
       100,
     );
-    this.statusBarItem.command = 'branchPainter.setColor';
+    this.statusBarItem.command = COMMAND_SET_COLOR;
     this.statusBarItem.tooltip = 'Branch Painter: クリックで色を変更';
   }
 
@@ -28,7 +29,7 @@ export class BranchPainterStatusBar implements vscode.Disposable {
       return;
     }
 
-    const branchName = repo.state.HEAD?.name || 'unknown';
+    const branchName = repo.state.HEAD?.name || UNKNOWN_BRANCH;
     const worktreeBadge = repo.kind === 'worktree' ? ' $(git-branch) worktree' : '';
 
     this.statusBarItem.text = `$(paintcan) ${branchName}${worktreeBadge}`;

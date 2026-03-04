@@ -1,8 +1,9 @@
 import * as vscode from 'vscode';
-import { applyThemeForBranch, resetTheme } from './themeApplier';
-import { readThemeApplyOptions } from './config';
-import { setColor, resetColor, toggleAutoColor } from './commands';
-import { BranchPainterStatusBar } from './statusBarItem';
+import { applyThemeForBranch, resetTheme } from './core/themeApplier';
+import { readThemeApplyOptions } from './core/config';
+import { setColor, resetColor, toggleAutoColor } from './ui/commands';
+import { BranchPainterStatusBar } from './ui/statusBarItem';
+import { COMMAND_SET_COLOR, COMMAND_RESET_COLOR, COMMAND_TOGGLE_AUTO_COLOR, UNKNOWN_BRANCH } from './constants';
 import type { API, APIState, Repository } from './git';
 
 /** Git 拡張から API を取得し、初期化を待機する */
@@ -65,9 +66,9 @@ function registerCommands(
   gitApi: API,
 ): void {
   context.subscriptions.push(
-    vscode.commands.registerCommand('branchPainter.setColor', () => setColor(gitApi)),
-    vscode.commands.registerCommand('branchPainter.resetColor', resetColor),
-    vscode.commands.registerCommand('branchPainter.toggleAutoColor', () =>
+    vscode.commands.registerCommand(COMMAND_SET_COLOR, () => setColor(gitApi)),
+    vscode.commands.registerCommand(COMMAND_RESET_COLOR, resetColor),
+    vscode.commands.registerCommand(COMMAND_TOGGLE_AUTO_COLOR, () =>
       toggleAutoColor(gitApi),
     ),
   );
@@ -84,7 +85,7 @@ function registerRepoListeners(
 
   /** リポジトリの現在ブランチに基づいてステータスバーとテーマ色を更新する */
   function updateBranchColor(repo: Repository) {
-    const branch = repo.state.HEAD?.name || 'unknown';
+    const branch = repo.state.HEAD?.name || UNKNOWN_BRANCH;
     console.log(`[BranchPainter] updateBranchColor: branch="${branch}", rootUri="${repo.rootUri.toString()}"`);
     statusBar.update(repo);
 

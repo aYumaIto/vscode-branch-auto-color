@@ -5,7 +5,8 @@
  * 適切な前景色（白/黒）を自動選択する。
  */
 
-import { HexColor, ColorOptions, BranchColor } from './types';
+import { HexColor, ColorOptions, BranchColor } from '../types';
+import { DEFAULT_SATURATION, DEFAULT_LIGHTNESS } from '../constants';
 
 /**
  * HEX カラー文字列を正規化する。
@@ -104,8 +105,8 @@ export function hslToHex(h: number, s: number, l: number): HexColor {
  */
 export function generateColorFromBranch(
   branchName: string,
-  saturation: number = 0.6,
-  lightness: number = 0.3,
+  saturation: number = DEFAULT_SATURATION,
+  lightness: number = DEFAULT_LIGHTNESS,
 ): HexColor {
   const hash = djb2Hash(branchName);
   const hue = hash % 360;
@@ -150,7 +151,7 @@ export function getForegroundColor(backgroundHex: string): HexColor {
  * branchColorMap にマッピングがあればそちらを優先する。
  */
 export function getColorForBranch(branchName: string, options: ColorOptions = {}): BranchColor {
-  const { branchColorMap, saturation = 0.6, lightness = 0.3 } = options;
+  const { branchColorMap, saturation = DEFAULT_SATURATION, lightness = DEFAULT_LIGHTNESS } = options;
 
   // branchColorMap にマッピングがある場合はそちらを優先（キーの存在で判定し、値は normalizeHexColor で検証）
   const background: HexColor =

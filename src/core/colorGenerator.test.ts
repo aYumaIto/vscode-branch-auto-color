@@ -6,7 +6,7 @@ import {
   getRelativeLuminance,
   getForegroundColor,
   getColorForBranch,
-} from '../colorGenerator';
+} from './colorGenerator';
 
 suite('colorGenerator', () => {
   // =============================================
