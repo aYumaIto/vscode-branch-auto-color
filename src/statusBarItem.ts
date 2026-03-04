@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import type { Repository } from './git';
+import { isEnabled } from './config';
 
 /**
  * ステータスバーにブランチ名・適用色・worktree バッジを表示する。
@@ -22,17 +23,13 @@ export class BranchPainterStatusBar implements vscode.Disposable {
    * branchPainter.enabled が false の場合は非表示にする。
    */
   update(repo: Repository): void {
-    const config = vscode.workspace.getConfiguration('branchPainter');
-    const enabled = config.get<boolean>('enabled', true);
-
-    if (!enabled) {
+    if (!isEnabled()) {
       this.statusBarItem.hide();
       return;
     }
 
     const branchName = repo.state.HEAD?.name || 'unknown';
-    const isWorktree = repo.kind === 'worktree';
-    const worktreeBadge = isWorktree ? ' $(git-branch) worktree' : '';
+    const worktreeBadge = repo.kind === 'worktree' ? ' $(git-branch) worktree' : '';
 
     this.statusBarItem.text = `$(paintcan) ${branchName}${worktreeBadge}`;
     this.statusBarItem.show();
@@ -43,6 +40,7 @@ export class BranchPainterStatusBar implements vscode.Disposable {
     this.statusBarItem.hide();
   }
 
+  /** ステータスバーアイテムを破棄する */
   dispose(): void {
     this.statusBarItem.dispose();
   }

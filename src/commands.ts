@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { applyBranchColors, applyThemeForBranch, resetTheme } from './themeApplier';
+import { isEnabled, setEnabled, readAffectOptions, readThemeApplyOptions, saveBranchColor } from './config';
 import type { HexColor } from './types';
 import { isHexColor } from './types';
 import { getForegroundColor } from './colorGenerator';
@@ -83,15 +84,10 @@ export async function setColor(gitApi: API): Promise<void> {
     return;
   }
 
-  const bpConfig = vscode.workspace.getConfiguration('branchPainter');
-  const colorMap = { ...bpConfig.get<Record<string, string>>('branchColorMap', {}) };
-  colorMap[branchName] = bg;
-  await bpConfig.update('branchColorMap', colorMap, vscode.ConfigurationTarget.Workspace);
+  await saveBranchColor(branchName, bg);
 
   // テーマを即時適用（ユーザー設定に応じて対象 UI を制御）
-  const affectTitleBar = bpConfig.get<boolean>('affectTitleBar', true);
-  const affectStatusBar = bpConfig.get<boolean>('affectStatusBar', true);
-  const affectActivityBar = bpConfig.get<boolean>('affectActivityBar', true);
+  const { affectTitleBar, affectStatusBar, affectActivityBar } = readAffectOptions();
 
   await applyBranchColors({
     ...(affectTitleBar && { titleBar: bg, titleBarForeground: fg }),
@@ -115,9 +111,8 @@ export async function resetColor(): Promise<void> {
  * 有効化時は即座に色を適用、無効化時はリセットする。
  */
 export async function toggleAutoColor(gitApi: API): Promise<void> {
-  const config = vscode.workspace.getConfiguration('branchPainter');
-  const enabled = config.get<boolean>('enabled', true);
-  await config.update('enabled', !enabled, vscode.ConfigurationTarget.Workspace);
+  const enabled = isEnabled();
+  await setEnabled(!enabled);
 
   if (enabled) {
     // 無効化時はテーマをリセットして元に戻す
@@ -131,7 +126,10 @@ export async function toggleAutoColor(gitApi: API): Promise<void> {
       );
       return;
     }
-    await applyThemeForBranch(branchName);
+    const options = readThemeApplyOptions();
+    if (options) {
+      await applyThemeForBranch(branchName, options);
+    }
   }
 
   vscode.window.showInformationMessage(

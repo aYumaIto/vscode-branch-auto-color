@@ -6,7 +6,7 @@ import {
   formatBranchTitle,
 } from './themeApplierCore';
 import type { BranchColorOptions } from './themeApplierCore';
-import type { HexColor } from './types';
+import type { HexColor, ThemeApplyOptions } from './types';
 
 // 純粋関数・型を re-export（既存の利用箇所との互換性のため）
 export {
@@ -40,39 +40,24 @@ export async function resetBranchColors(): Promise<void> {
 
 /**
  * ブランチ名に基づいてテーマを適用する
- * - branchPainter.enabled が false なら何もしない
  * - branchColorMap を優先し、なければ colorGenerator で色を生成
  * - 設定に応じて titleBar, statusBar, activityBar を個別に制御
  * - showBranchInTitle が有効な場合、window.title にブランチ名を反映
  * - getColorForBranch が例外を投げた場合はエラーメッセージを表示し、既存設定を壊さない
+ *
+ * 注意: enabled チェックは呼び出し元の責務。
  */
-export async function applyThemeForBranch(branchName: string): Promise<void> {
-  const config = vscode.workspace.getConfiguration('branchPainter');
-
-  if (!config.get<boolean>('enabled', true)) {
-    return;
-  }
-
-  const branchColorMap = config.get<Record<string, string>>('branchColorMap', {});
-  const saturation = config.get<number>('saturation', 0.6);
-  const lightness = config.get<number>('lightness', 0.3);
-
-  const affectTitleBar = config.get<boolean>('affectTitleBar', true);
-  const affectStatusBar = config.get<boolean>('affectStatusBar', true);
-  const affectActivityBar = config.get<boolean>('affectActivityBar', true);
-  const showBranchInTitle = config.get<boolean>('showBranchInTitle', true);
-  const titleFormat = config.get<string>(
-    'titleFormat',
-    '[${branch}] ${folderName} ${separator} ${activeEditorShort}${dirty}',
-  );
-
+export async function applyThemeForBranch(
+  branchName: string,
+  options: ThemeApplyOptions,
+): Promise<void> {
   let background: HexColor;
   let foreground: HexColor;
   try {
     ({ background, foreground } = getColorForBranch(branchName, {
-      branchColorMap,
-      saturation,
-      lightness,
+      branchColorMap: options.branchColorMap,
+      saturation: options.saturation,
+      lightness: options.lightness,
     }));
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -81,13 +66,13 @@ export async function applyThemeForBranch(branchName: string): Promise<void> {
   }
 
   await applyBranchColors({
-    ...(affectTitleBar && { titleBar: background, titleBarForeground: foreground }),
-    ...(affectStatusBar && { statusBar: background, statusBarForeground: foreground }),
-    ...(affectActivityBar && { activityBar: background, activityBarForeground: foreground }),
+    ...(options.affectTitleBar && { titleBar: background, titleBarForeground: foreground }),
+    ...(options.affectStatusBar && { statusBar: background, statusBarForeground: foreground }),
+    ...(options.affectActivityBar && { activityBar: background, activityBarForeground: foreground }),
   });
 
-  if (showBranchInTitle) {
-    const title = formatBranchTitle(titleFormat, branchName);
+  if (options.showBranchInTitle) {
+    const title = formatBranchTitle(options.titleFormat, branchName);
     await vscode.workspace
       .getConfiguration('window')
       .update('title', title, vscode.ConfigurationTarget.Workspace);
