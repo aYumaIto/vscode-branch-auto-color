@@ -95,13 +95,13 @@ export async function resetColor(): Promise<void> {
  */
 export async function toggleAutoColor(gitApi: API): Promise<void> {
   const enabled = isEnabled();
-  await setEnabled(!enabled);
 
   if (enabled) {
-    // 無効化時はテーマをリセットして元に戻す
+    // 無効化: 設定を先に変更してからテーマをリセット
+    await setEnabled(false);
     await resetTheme();
   } else {
-    // 有効化時は即座に色を適用
+    // 有効化: ブランチ名を取得できた場合のみ enabled を更新
     const branchName = getCurrentBranchName(gitApi);
     if (!branchName) {
       vscode.window.showErrorMessage(
@@ -109,6 +109,7 @@ export async function toggleAutoColor(gitApi: API): Promise<void> {
       );
       return;
     }
+    await setEnabled(true);
     const options = readThemeApplyOptions();
     if (options) {
       await applyThemeForBranch(branchName, options);
