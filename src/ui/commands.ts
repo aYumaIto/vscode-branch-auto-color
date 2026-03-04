@@ -68,7 +68,7 @@ export async function setColor(gitApi: API): Promise<void> {
   const branchName = getCurrentBranchName(gitApi);
   if (!branchName) {
     vscode.window.showErrorMessage(
-      'Branch Painter: Gitリポジトリが開かれていないか、現在のブランチを特定できないため色を適用できません。',
+      'Branch Auto Color: Gitリポジトリが開かれていないか、現在のブランチを特定できないため色を適用できません。',
     );
     return;
   }
@@ -78,7 +78,7 @@ export async function setColor(gitApi: API): Promise<void> {
   if (options) {
     await applyThemeForBranch(branchName, options);
   }
-  vscode.window.showInformationMessage(`Branch Painter: 色を適用しました (${hexColor})`);
+  vscode.window.showInformationMessage(`Branch Auto Color: 色を適用しました (${hexColor})`);
 }
 
 /**
@@ -86,7 +86,7 @@ export async function setColor(gitApi: API): Promise<void> {
  */
 export async function resetColor(): Promise<void> {
   await resetTheme();
-  vscode.window.showInformationMessage('Branch Painter: 色設定をリセットしました');
+  vscode.window.showInformationMessage('Branch Auto Color: 色設定をリセットしました');
 }
 
 /**
@@ -105,7 +105,7 @@ export async function toggleAutoColor(gitApi: API): Promise<void> {
     const branchName = getCurrentBranchName(gitApi);
     if (!branchName) {
       vscode.window.showErrorMessage(
-        'Branch Painter: Gitリポジトリが開かれていないか、現在のHEADがブランチに紐付いていません。自動色分けを適用できませんでした。',
+        'Branch Auto Color: Gitリポジトリが開かれていないか、現在のHEADがブランチに紐付いていません。自動色分けを適用できませんでした。',
       );
       return;
     }
@@ -117,6 +117,6 @@ export async function toggleAutoColor(gitApi: API): Promise<void> {
   }
 
   vscode.window.showInformationMessage(
-    `Branch Painter: 自動色分けを${!enabled ? '有効' : '無効'}にしました`,
+    `Branch Auto Color: 自動色分けを${!enabled ? '有効' : '無効'}にしました`,
   );
 }

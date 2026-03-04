@@ -3,9 +3,9 @@
  */
 
 /** コマンドID */
-export const COMMAND_SET_COLOR = 'branchPainter.setColor';
-export const COMMAND_RESET_COLOR = 'branchPainter.resetColor';
-export const COMMAND_TOGGLE_AUTO_COLOR = 'branchPainter.toggleAutoColor';
+export const COMMAND_SET_COLOR = 'branchAutoColor.setColor';
+export const COMMAND_RESET_COLOR = 'branchAutoColor.resetColor';
+export const COMMAND_TOGGLE_AUTO_COLOR = 'branchAutoColor.toggleAutoColor';
 
 /** ブランチ名が取得できない場合のフォールバック値 */
 export const UNKNOWN_BRANCH = 'unknown';

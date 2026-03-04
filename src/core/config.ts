@@ -1,5 +1,5 @@
 /**
- * config — branchPainter 設定の読み取りヘルパー
+ * config — branchAutoColor 設定の読み取りヘルパー
  *
  * vscode.workspace.getConfiguration の呼び出しを集約し、
  * 各モジュールが直接設定を読み取らないようにする。
@@ -12,12 +12,12 @@ import { DEFAULT_SATURATION, DEFAULT_LIGHTNESS } from '../constants';
 const DEFAULT_TITLE_FORMAT =
   '[${branch}] ${folderName} ${separator} ${activeEditorShort}${dirty}';
 
-/** branchPainter の設定オブジェクトを取得する（内部ヘルパー） */
+/** branchAutoColor の設定オブジェクトを取得する（内部ヘルパー） */
 function getConfig() {
-  return vscode.workspace.getConfiguration('branchPainter');
+  return vscode.workspace.getConfiguration('branchAutoColor');
 }
 
-/** branchPainter.enabled の現在値を返す */
+/** branchAutoColor.enabled の現在値を返す */
 export function isEnabled(): boolean {
   return getConfig().get<boolean>('enabled', true);
 }
@@ -35,7 +35,7 @@ export type AffectOptions = {
 };
 
 /**
- * `branchPainter.affect*` 設定を読み取り、各バーへの色適用フラグを返す。
+ * `branchAutoColor.affect*` 設定を読み取り、各バーへの色適用フラグを返す。
  *
  * @returns 各バーへの色適用を有効にするかどうかのフラグ（デフォルトはすべて `true`）
  */
@@ -57,7 +57,7 @@ export async function saveBranchColor(branchName: string, color: HexColor): Prom
 }
 
 /**
- * branchPainter 設定からテーマ適用オプションを読み取る。
+ * branchAutoColor 設定からテーマ適用オプションを読み取る。
  * enabled が false の場合は null を返す。
  */
 export function readThemeApplyOptions(): ThemeApplyOptions | null {
