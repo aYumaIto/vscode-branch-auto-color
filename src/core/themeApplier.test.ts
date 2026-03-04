@@ -4,7 +4,7 @@ import {
   buildColorCustomizations,
   removeManagedKeys,
   MANAGED_COLOR_KEYS,
-} from './themeApplier';
+} from './themeApplierCore';
 import { HexColor } from '../types';
 
 suite('themeApplier', () => {
