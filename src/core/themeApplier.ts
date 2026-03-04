@@ -59,7 +59,7 @@ export async function applyThemeForBranch(
     }));
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    vscode.window.showErrorMessage(`Branch Painter: 色の生成に失敗しました — ${message}`);
+    vscode.window.showErrorMessage(`Branch Auto Color: 色の生成に失敗しました — ${message}`);
     return;
   }
 

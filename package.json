@@ -1,8 +1,14 @@
 {
-  "name": "vscode-branch-painter",
-  "displayName": "Branch Painter",
+  "name": "vscode-branch-auto-color",
+  "displayName": "Branch Auto Color",
   "description": "Git branch-based color theming for VS Code",
   "version": "0.0.1",
+  "publisher": "aYumaIto",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aYumaIto/vscode-branch-auto-color.git"
+  },
   "engines": {
     "vscode": "^1.109.0"
   },
@@ -20,52 +26,52 @@
   "contributes": {
     "commands": [
       {
-        "command": "branchPainter.setColor",
-        "title": "Branch Painter: Set Color"
+        "command": "branchAutoColor.setColor",
+        "title": "Branch Auto Color: Set Color"
       },
       {
-        "command": "branchPainter.resetColor",
-        "title": "Branch Painter: Reset Color"
+        "command": "branchAutoColor.resetColor",
+        "title": "Branch Auto Color: Reset Color"
       },
       {
-        "command": "branchPainter.toggleAutoColor",
-        "title": "Branch Painter: Toggle Auto Color"
+        "command": "branchAutoColor.toggleAutoColor",
+        "title": "Branch Auto Color: Toggle Auto Color"
       }
     ],
     "configuration": {
-      "title": "Branch Painter",
+      "title": "Branch Auto Color",
       "properties": {
-        "branchPainter.enabled": {
+        "branchAutoColor.enabled": {
           "type": "boolean",
           "default": true,
           "description": "拡張機能の有効/無効"
         },
-        "branchPainter.affectTitleBar": {
+        "branchAutoColor.affectTitleBar": {
           "type": "boolean",
           "default": true,
           "description": "タイトルバーの色を変更するか"
         },
-        "branchPainter.affectStatusBar": {
+        "branchAutoColor.affectStatusBar": {
           "type": "boolean",
           "default": true,
           "description": "ステータスバーの色を変更するか"
         },
-        "branchPainter.affectActivityBar": {
+        "branchAutoColor.affectActivityBar": {
           "type": "boolean",
           "default": true,
           "description": "アクティビティバーの色を変更するか"
         },
-        "branchPainter.showBranchInTitle": {
+        "branchAutoColor.showBranchInTitle": {
           "type": "boolean",
           "default": true,
           "description": "タイトルバーにブランチ名を表示するか"
         },
-        "branchPainter.titleFormat": {
+        "branchAutoColor.titleFormat": {
           "type": "string",
           "default": "[${branch}] ${folderName} ${separator} ${activeEditorShort}${dirty}",
           "description": "タイトル表示のフォーマット"
         },
-        "branchPainter.branchColorMap": {
+        "branchAutoColor.branchColorMap": {
           "type": "object",
           "default": {},
           "description": "ブランチ名と色の手動マッピング（例: { \"main\": \"#1e8a3a\", \"develop\": \"#3a7ae8\" }）",
@@ -75,14 +81,14 @@
             "description": "16進カラーコード (#RGB, #RRGGBB, #RRGGBBAA)"
           }
         },
-        "branchPainter.saturation": {
+        "branchAutoColor.saturation": {
           "type": "number",
           "default": 0.6,
           "minimum": 0,
           "maximum": 1,
           "description": "自動生成色の彩度 (0-1)"
         },
-        "branchPainter.lightness": {
+        "branchAutoColor.lightness": {
           "type": "number",
           "default": 0.3,
           "minimum": 0,

@@ -4,7 +4,7 @@
 
 ## プロジェクト概要
 
-VS Code 拡張機能「Branch Painter」— Git ブランチ名に基づいてタイトルバー・ステータスバー・アクティビティバーの色を自動変更し、タイトルにブランチ名を表示する。
+VS Code 拡張機能「Branch Auto Color」— Git ブランチ名に基づいてタイトルバー・ステータスバー・アクティビティバーの色を自動変更し、タイトルにブランチ名を表示する。
 
 ## 技術スタック
 
@@ -71,7 +71,7 @@ npm test          # テスト実行（要: npm run compile 事前実行）
 
 - `personal_workspace/` は gitignore 対象。個人的な作業メモ・下書きの保存先
 - `docs/development-plan.md` が設計の正式な仕様。変更時は事前に確認すること
-- `package.json` の `contributes` セクションが拡張機能の宣言的定義。コマンド ID は `branchPainter.*` を使用
+- `package.json` の `contributes` セクションが拡張機能の宣言的定義。コマンド ID は `branchAutoColor.*` を使用
 
 ## 指摘事項（追記していく）
 

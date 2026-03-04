@@ -5,9 +5,9 @@ import { COMMAND_SET_COLOR, UNKNOWN_BRANCH } from '../constants';
 
 /**
  * ステータスバーにブランチ名・適用色・worktree バッジを表示する。
- * クリックで branchPainter.setColor コマンドを起動する。
+ * クリックで branchAutoColor.setColor コマンドを起動する。
  */
-export class BranchPainterStatusBar implements vscode.Disposable {
+export class BranchAutoColorStatusBar implements vscode.Disposable {
   private readonly statusBarItem: vscode.StatusBarItem;
 
   constructor() {
@@ -16,12 +16,12 @@ export class BranchPainterStatusBar implements vscode.Disposable {
       100,
     );
     this.statusBarItem.command = COMMAND_SET_COLOR;
-    this.statusBarItem.tooltip = 'Branch Painter: クリックで色を変更';
+    this.statusBarItem.tooltip = 'Branch Auto Color: クリックで色を変更';
   }
 
   /**
    * リポジトリの状態に基づいてステータスバーを更新する。
-   * branchPainter.enabled が false の場合は非表示にする。
+   * branchAutoColor.enabled が false の場合は非表示にする。
    */
   update(repo: Repository): void {
     if (!isEnabled()) {

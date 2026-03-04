@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { applyThemeForBranch, resetTheme } from './core/themeApplier';
 import { readThemeApplyOptions } from './core/config';
 import { setColor, resetColor, toggleAutoColor } from './ui/commands';
-import { BranchPainterStatusBar } from './ui/statusBarItem';
+import { BranchAutoColorStatusBar } from './ui/statusBarItem';
 import { COMMAND_SET_COLOR, COMMAND_RESET_COLOR, COMMAND_TOGGLE_AUTO_COLOR, UNKNOWN_BRANCH } from './constants';
 import type { API, APIState, Repository } from './git';
 
@@ -79,7 +79,7 @@ function registerCommands(
 function registerRepoListeners(
   context: vscode.ExtensionContext,
   gitApi: API,
-  statusBar: BranchPainterStatusBar,
+  statusBar: BranchAutoColorStatusBar,
 ): void {
   // テーマ適用処理を直列化するための Promise チェーン
   let lastApplyPromise: Promise<void> = Promise.resolve();
@@ -98,7 +98,7 @@ function registerRepoListeners(
       .then(() => applyThemeForBranch(branch, options))
       .catch((error) => {
         const message = error instanceof Error ? error.message : String(error);
-        vscode.window.showErrorMessage(`Branch Painter: テーマ適用失敗 — ${message}`);
+        vscode.window.showErrorMessage(`Branch Auto Color: テーマ適用失敗 — ${message}`);
       });
   }
 
@@ -128,11 +128,11 @@ function registerRepoListeners(
 function registerConfigListeners(
   context: vscode.ExtensionContext,
   gitApi: API,
-  statusBar: BranchPainterStatusBar,
+  statusBar: BranchAutoColorStatusBar,
 ): void {
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration((e) => {
-      if (e.affectsConfiguration('branchPainter.enabled')) {
+      if (e.affectsConfiguration('branchAutoColor.enabled')) {
         const repo = gitApi.repositories[0];
         if (repo) {
           statusBar.update(repo);
@@ -145,8 +145,8 @@ function registerConfigListeners(
 }
 
 /** ステータスバーアイテムを生成し、context に登録する */
-function createStatusBar(context: vscode.ExtensionContext): BranchPainterStatusBar {
-  const statusBar = new BranchPainterStatusBar();
+function createStatusBar(context: vscode.ExtensionContext): BranchAutoColorStatusBar {
+  const statusBar = new BranchAutoColorStatusBar();
   context.subscriptions.push(statusBar);
   return statusBar;
 }
