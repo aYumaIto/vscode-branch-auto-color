@@ -71,8 +71,8 @@
           "description": "ブランチ名と色の手動マッピング（例: { \"main\": \"#1e8a3a\", \"develop\": \"#3a7ae8\" }）",
           "additionalProperties": {
             "type": "string",
-            "pattern": "^#(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$",
-            "description": "16進カラーコード (#RRGGBB または #RRGGBBAA)"
+            "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$",
+            "description": "16進カラーコード (#RGB, #RRGGBB, #RRGGBBAA)"
           }
         },
         "branchPainter.saturation": {
