@@ -6,7 +6,11 @@ import { BranchPainterStatusBar } from './ui/statusBarItem';
 import { COMMAND_SET_COLOR, COMMAND_RESET_COLOR, COMMAND_TOGGLE_AUTO_COLOR, UNKNOWN_BRANCH } from './constants';
 import type { API, APIState, Repository } from './git';
 
-/** Git 拡張から API を取得し、初期化を待機する */
+/**
+ * Git 拡張から API を取得し、初期化を待機する。
+ * Git 拡張が見つからない・有効化されていない場合は例外を投げる。
+ * ユーザーが意図的に Git 拡張を無効にしている場合があるため、強制 activate はしない。
+ */
 async function getGitApi(): Promise<API> {
   const gitExt = vscode.extensions.getExtension('vscode.git');
   if (!gitExt) {
@@ -14,6 +18,8 @@ async function getGitApi(): Promise<API> {
   }
 
   if (!gitExt.isActive) {
+    // Git 拡張を強制的に activate しない。
+    // ユーザーが意図的に無効にしている場合を考慮する。
     throw new Error('Git拡張が有効化されていません');
   }
   const gitApi: API = gitExt.exports.getAPI(1);
@@ -159,7 +165,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   const gitApi = await getGitApi().catch((error: unknown) => {
     const message = error instanceof Error ? error.message : String(error);
-    vscode.window.showErrorMessage(`Branch Painter: ${message}`);
+    console.warn(`[BranchPainter] ${message}`);
     return undefined;
   });
   if (!gitApi) {
