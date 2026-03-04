@@ -44,3 +44,6 @@ npm run compile
 ## ライセンス / License
 
 MIT
+
+サードパーティコードの帰属情報は [NOTICE.md](NOTICE.md) を参照してください。
+See [NOTICE.md](NOTICE.md) for third-party attribution.
