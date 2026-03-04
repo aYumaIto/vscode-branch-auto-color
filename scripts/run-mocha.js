@@ -9,7 +9,7 @@ require('source-map-support').install();
 const mocha = new Mocha({ ui: 'tdd' });
 
 // Only run pure unit tests that do not require the VS Code environment
-const testFiles = glob.sync('src/test/{colorGenerator,themeApplier}.test.ts', { absolute: true });
+const testFiles = glob.sync('src/{types,core/colorGenerator,core/themeApplier}.test.ts', { absolute: true });
 for (const file of testFiles) {
   mocha.addFile(file);
 }
