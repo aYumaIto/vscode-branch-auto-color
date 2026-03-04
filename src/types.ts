@@ -30,3 +30,15 @@ export type BranchColor = {
   background: HexColor;
   foreground: HexColor;
 };
+
+/** applyThemeForBranch に渡すテーマ適用オプション */
+export type ThemeApplyOptions = {
+  branchColorMap: Record<string, string>;
+  saturation: number;
+  lightness: number;
+  affectTitleBar: boolean;
+  affectStatusBar: boolean;
+  affectActivityBar: boolean;
+  showBranchInTitle: boolean;
+  titleFormat: string;
+};
